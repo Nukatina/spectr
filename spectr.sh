@@ -54,55 +54,42 @@ get_audio_data() {
     fi
 }
 
-# Draw spectrum (with fake mode fallback)
+# Draw spectrum (real-time with showvolume for bands)
 draw_spectrum() {
-    while true; do
-        if [[ $FAKE_MODE -eq 1 ]]; then
-            # Fake pulsing bars for demo (no audio needed)
-            FRAME_COUNT=$((FRAME_COUNT + 1))
-            local sin_val=$(echo "s($FRAME_COUNT/10)*10 + 10" | bc -l 2>/dev/null || echo "10")
-            level=$((sin_val))
-        else
-            # Real astats (safer filter chain)
-            local line=$(ffmpeg -hide_banner -nostats -threads 0 -i pipe:0 \
-                -af "astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-:direct=1" \
-                -f null - 2>&1 | head -1 | grep -o 'RMS_level=[-0-9.]*' || echo "RMS_level=-60")
-            level=$(echo "$line" | cut -d= -f2)
-            level=${level:--60}  # Default if parse fails
-            level=$(( (level + 60) * HEIGHT / 60 ))
-            ((level = level < 1 ? 1 : level > HEIGHT ? HEIGHT : level))
-        fi
-
-        clear
-        # Draw bars (multi-bar for full spectrum look)
-        for ((row=HEIGHT; row>=1; row--)); do
-            line=""
-            for ((i=0; i<BANDS; i++)); do
-                local band_level=$(( level + (i % 5) - 2 ))  # Fake spread
-                ((band_level = band_level < 1 ? 1 : band_level))
-                if (( row <= band_level && row > band_level * 6/8 )); then
-                    line+="${RED}█${RESET}"
-                elif (( row <= band_level && row > band_level * 4/8 )); then
-                    line+="${ORANGE}█${RESET}"
-                elif (( row <= band_level && row > band_level * 2/8 )); then
-                    line+="${YELLOW}█${RESET}"
-                elif (( row <= band_level )); then
-                    line+="${GREEN}█${RESET}"
-                else
-                    line+=" "
-                fi
-            done
-            echo -e "$line"
-        done
-
-        echo -e "${CYAN}60Hz          1kHz          6kHz          18kHz${RESET}"
-        if [[ $FAKE_MODE -eq 1 ]]; then
-            echo -e "${PURPLE}♪ Demo Mode: Pulsing Spectrum (add demo.mp3 for real audio)${RESET}"
-        else
+    # Use ffmpeg to generate volume bars directly (no fake needed)
+    ffmpeg -hide_banner -nostats -i "$INPUT" \
+        -filter_complex "
+            [0:a]showvolume=s=40x18:rate=10:scale=log:colors=white@0.9|red@0.8|yellow@0.6|green@0.4|blue@0.2[v];
+            [v]scale=iw*2:ih:flags=neighbor[cropped];
+            [cropped]transpose=1[transposed];
+            [transposed]transpose=1[rotated]
+        " \
+        -map "[rotated]" -f ppm - 2>/dev/null | while read -r line; do
+            # Parse PPM header + pixel data for bar heights (simplified)
+            if [[ $line =~ P6 ]]; then
+                # Skip header, read pixel rows
+                for ((row=HEIGHT; row>=1; row--)); do
+                    pixel_line=$(dd bs=1 count=$((BANDS*3)) 2>/dev/null | hexdump -v -e '/3 " %02x%02x%02x"')
+                    bar_line=""
+                    for ((i=0; i<BANDS; i++)); do
+                        # Extract RGB, map to height/color
+                        color_hex=$(echo "$pixel_line" | cut -d' ' -f$((i*3+1)))
+                        intensity=$((16#${color_hex:0:2}))  # Rough brightness
+                        bar_h=$((intensity / 16))  # Scale to height
+                        if (( row <= bar_h && row > bar_h * 0.75 )); then
+                            bar_line+="${RED}█${RESET}"
+                        elif (( row <= bar_h )); then
+                            bar_line+="${YELLOW}█${RESET}"
+                        else
+                            bar_line+=" "
+                        fi
+                    done
+                    echo -e "$bar_line"
+                done
+            fi
+            echo -e "${CYAN}60Hz          1kHz          6kHz          18kHz${RESET}"
             echo -e "${PURPLE}♪ Now Playing: $INPUT${RESET}"
-        fi
-        echo -e "${WHITE}Ctrl+C to stop | Level: ${level}dB${RESET}"
-        sleep 0.1  # Frame rate
+            echo -e "${WHITE}Ctrl+C to stop | Real-time mode${RESET}"
     done
 }
 
