@@ -1,7 +1,5 @@
 # spectr — Real-time Terminal Audio Spectrum Analyzer
 
-![spectr demo](demo.gif)
-
 **A stunning 40-band real-time audio spectrum visualizer written entirely in Bash.**
 
 No Python. No ncurses. Just `ffmpeg`, `bash`, and pure terminal magic.
