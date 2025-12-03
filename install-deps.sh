@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-echo "Installing dependencies for GitHub CodeSpaces..."
-sudo apt update && sudo apt install -y ffmpeg yt-dlp pulseaudio
-echo "All set! Run: ./spectr.sh demo.mp3"
+echo "Installing everything (this takes ~30 seconds)..."
+sudo apt update -qq && sudo apt install -y ffmpeg yt-dlp pulseaudio > /dev/null 2>&1
+echo "✅ All done! Now run: ./spectr.sh demo.mp3"
