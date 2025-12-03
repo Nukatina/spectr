@@ -18,8 +18,8 @@ I wanted to show off hardcore Bash skills with something visual and fun that run
 
 ```bash
 chmod +x install-deps.sh spectr.sh
-./install-deps.sh
-./spectr.sh demo.mp3
+./install-deps.sh  # Installs/updates ffmpeg + yt-dlp
+./spectr.sh demo.mp3  # Should show pulsing bars immediately
 
 # Or paste any YouTube link:
 
