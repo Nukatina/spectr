@@ -1,8 +1,11 @@
-# spectr — Real-time Terminal Audio Spectrum Analyzer
+# spectr — Real-time Terminal Audio Spectrum Analyzer 🎵
 
-**A stunning 40-band real-time audio spectrum visualizer written entirely in Bash.**
+A real-time audio visualizer that works on MP3 files and YouTube links. Written **entirely in Bash**.
 
 No Python. No ncurses. Just `ffmpeg`, `bash`, and pure terminal magic.
+
+## Problem I Solved
+I wanted to show off hardcore Bash skills with something visual and fun that runs anywhere (even servers with no GUI).
 
 ## Features
 - 40 frequency bands with falling peaks
@@ -13,8 +16,17 @@ No Python. No ncurses. Just `ffmpeg`, `bash`, and pure terminal magic.
 
 ## Live Demo
 ```bash
+chmod +x install-deps.sh spectr.sh
+./install-deps.sh
 ./spectr.sh demo.mp3
 
 # Or try:
 
 ./spectr.sh https://www.youtube.com/watch?v=y6120QOlsfU   # Darude - Sandstorm
+```
+
+## Attribution & Thanks
+Built with help from Grok (xAI) • Inspired by classic terminal demos
+
+## License
+MIT © 2025 Tina Bowles
