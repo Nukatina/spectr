@@ -14,13 +14,14 @@ I wanted to show off hardcore Bash skills with something visual and fun that run
 - Works perfectly in GitHub CodeSpaces
 - Zero heavy dependencies
 
-## Live Demo
+## How to run (works in GitHub CodeSpaces!)
+
 ```bash
 chmod +x install-deps.sh spectr.sh
 ./install-deps.sh
 ./spectr.sh demo.mp3
 
-# Or try:
+# Or paste any YouTube link:
 
 ./spectr.sh https://www.youtube.com/watch?v=y6120QOlsfU   # Darude - Sandstorm
 ```
